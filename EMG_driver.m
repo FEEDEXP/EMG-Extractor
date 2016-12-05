@@ -27,5 +27,5 @@ end
 % noise intervals
 noiseIntervals = [offsets(1: length(offsets) - 1) + ambiguousLen, onsets(2: length(onsets)) - ambiguousLen];
 
-p = noiseModel(wave, false, false, noiseAll, noiseIntervals);
+p = noiseModel(wave, false, true, noiseAll, noiseIntervals);
 post_processing

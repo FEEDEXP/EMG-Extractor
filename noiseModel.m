@@ -1,10 +1,13 @@
-function [ p ] = noiseModel( wave1, extremaOnly, useContinuous, noiseRegion, noiseIntervals )
+function [ p ] = noiseModel( wave1, extremaOnly, useContinuous, noiseRegion, noiseIntervals, opt )
 %NOISEMODEL Noise model using bigrams
 %   Detailed explanation goes here
 
 %% Model paramsp = noiseModel(wave, false,  true);
 if ~exist('useContinuous', 'var')
     useContinuous = true;
+end
+if ~exist('opt', 'var')
+    opt = struct();
 end
 
 % optional: simplify by removing consecutive 
@@ -23,11 +26,14 @@ if exist('noiseRegion', 'var')
     noiseAll = noiseRegion;
 else
     disp('Estimating noise region based on Thexton''s method');
-    hwSize = 7;
-    approxNoiseIntervals = roughNoise(wave2, inds, hwSize);
+    if ~exist('opt.thextonizerHwSize', 'var')
+        approxNoiseIntervals = roughNoise(wave2, inds);
+    else
+        approxNoiseIntervals = roughNoise(wave2, inds, opt.thextonizerHwSize);
+    end
 
     figure
-    title(sprintf('Approximate noise intervals with window size %d', hwSize*2 + 1));
+    title(sprintf('Approximate noise intervals'));
     hold on
     noiseAll = [];
     for i = 1: size(approxNoiseIntervals, 1)
@@ -43,31 +49,33 @@ end
 
 %% Transition matrix
 % need to scale noise and round it
-diffNoise = diff(round(noiseAll));
-diffOffset = min(diffNoise) - 1;
-n = round(max(diffNoise - diffOffset));
-TM = zeros(n, n);
+if ~useContinuous
+    diffNoise = diff(round(noiseAll));
+    diffOffset = min(diffNoise) - 1;
+    n = round(max(diffNoise - diffOffset));
+    TM = zeros(n, n);
 
-for i = 1: length(noiseIntervals)
-    noise = wave2(noiseIntervals(i, 1): noiseIntervals(i, 2));
-    if extremaOnly
-        [noise, noiseInds] = extractExtrema(noise);
-    end
-    
-    diffNoise = diff(round(noise)) - diffOffset;
-    %plot(diffNoise);
-    % transition
+    for i = 1: length(noiseIntervals)
+        noise = wave2(noiseIntervals(i, 1): noiseIntervals(i, 2));
+        if extremaOnly
+            [noise, noiseInds] = extractExtrema(noise);
+        end
 
-    % the coordinates of each point is the consecutive diffNoise values
-    for j = 1: length(diffNoise) - 1
-        curr = diffNoise(j);
-        next = diffNoise(j + 1);
-        TM(round(curr), round(next)) = TM(curr, next) + 1;
+        diffNoise = diff(round(noise)) - diffOffset;
+        %plot(diffNoise);
+        % transition
+
+        % the coordinates of each point is the consecutive diffNoise values
+        for j = 1: length(diffNoise) - 1
+            curr = diffNoise(j);
+            next = diffNoise(j + 1);
+            TM(round(curr), round(next)) = TM(curr, next) + 1;
+        end
     end
+    %points = points(:, 1: pointsIdx);
+    figure
+    surf(TM);
 end
-%points = points(:, 1: pointsIdx);
-figure
-surf(TM);
 
 %% For continuous model (with normal distribution assumption):
 points = zeros(2, length(wave2));
@@ -105,24 +113,26 @@ if ~exist('reRun', 'var')
     reRun = true;
 end
 
-diffWave = diff(wave2) - diffOffset;
-if reRun
-    TMall = java.util.HashMap;
-    for i = 1: length(diffWave) - 1
-        p = java.awt.Point(diffWave(i), diffWave(i+1));
-        count = TMall.get(p);
-        if isempty(count)
-            TMall.put(p, 1);
-        else
-            TMall.put(p, count + 1);
+if ~useContinuous
+    diffWave = diff(wave2) - diffOffset;
+    if reRun
+        TMall = java.util.HashMap;
+        for i = 1: length(diffWave) - 1
+            p = java.awt.Point(diffWave(i), diffWave(i+1));
+            count = TMall.get(p);
+            if isempty(count)
+                TMall.put(p, 1);
+            else
+                TMall.put(p, count + 1);
+            end
         end
-    end
-    reRun = false;
-else
-    if extremaOnly
-        load TMall1;
+        reRun = false;
     else
-        load TMall;
+        if extremaOnly
+            load TMall1;
+        else
+            load TMall;
+        end
     end
 end
 

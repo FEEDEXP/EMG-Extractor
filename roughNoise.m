@@ -46,16 +46,19 @@ fprintf('Threshold set at: %d\n', threshold);
 
 %% use threshold to find noise regions
 
+%hwSize = 24;
+%emg = integrateEMG(emg, hwSize);
+
 isNoise = emg < threshold;
 if ~isrow(isNoise)
     isNoise = isNoise';
 end
 % a noise region has to be of length at least minDuration
-minDuration = 500;
+minDuration = 200;
 
 diffNoise = diff([0, isNoise, 0]);
-startIndex = find(diffNoise > 0);
-endIndex = find(diffNoise < 0) - 1;
+startIndex = find(diffNoise > 0) + 30;
+endIndex = find(diffNoise < 0) - 1 - 30;
 duration = endIndex-startIndex+1;
 
 rmIntervals = duration < minDuration;

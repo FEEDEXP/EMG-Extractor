@@ -1,19 +1,30 @@
-function [ threshold, isSignal ] = thextonizer( signal )
+function [ threshold, isSignal ] = thextonizer( signal, hwSize )
 %THEXTONIZER Implement a thextonizer
 %  
 %   Given an input EMG signal, find a threshold that best distinguishes noise
 %   from EMG.
 %
 
+% The number of threshold to be tested for the optimal threshold.
+% The larger this number is, the more fine-grained and time-consuming is
+% the Thextonizer.
+THRESHOLD_GRANULARITY = 100;
+
 % for integration
-hwSize = 49;
+if ~exist('hwSize', 'var')
+    hwSize = 24;
+end
 signalInt = integrateEMG(signal, hwSize);
 
 figure
 title('integrated signal');
 plot(signalInt);
 
-thresholds = 0.1: 0.5: 50;
+lb = min(signal);
+ub = max(signal);
+step = (ub - lb) / THRESHOLD_GRANULARITY;
+thresholds = lb : step : ub;
+% thresholds = 0.1: 0.5: 50;
 
 nCrossings = zeros(size(thresholds));
 nCrossingsRand = zeros(size(thresholds));
