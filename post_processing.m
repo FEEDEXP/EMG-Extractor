@@ -20,7 +20,7 @@ lwSize = 40;
 rwSize = 40;
 wSize = lwSize + rwSize + 1;
 
-threshold = -10;
+threshold = -opt.posteriorThreshold;
 
 lscore = zeros(size(p));
 rscore = zeros(size(p));
@@ -38,7 +38,7 @@ if opt.debug
     plot(inds(1: end - 1), lscore);
     subplot(2, 1, 2);
 end
-posterior = lscore - rscore;
+posterior = lscore + rscore;
 % sign does not matter here
 posterior = abs(posterior);
 %posterior(posterior == 1) = 0;
@@ -51,13 +51,11 @@ csvwrite([opt.inputFolderName, opt.inputFileName, '-EMG-output.csv'], posterior)
 %% Isolate signal regions
 
 % posterior threshold
-postThresh = opt.posteriorThreshold;
+minSignalPosterior = 7;
 
 % we allow this amount of zero entries within the signal. If the gap is
 % larger than that, we split the signal into two.
-%allowedGap = uint32(wSize );
 allowedGap = opt.allowedGap;
-
 
 nSignalRegions = 0;
 onsets = zeros(length(posterior), 1);
@@ -69,7 +67,7 @@ for i = 1: length(posterior) - allowedGap
     end
     seg = posterior(i: i + allowedGap - 1);
     % transfer into signal region
-    if ~inSignal && seg(1) >= postThresh
+    if ~inSignal && seg(1) >= minSignalPosterior
         inSignal = true;
         nSignalRegions = nSignalRegions + 1;
         
@@ -78,7 +76,7 @@ for i = 1: length(posterior) - allowedGap
     % transfer out of signal region:
     % When the values are less than 4 in allowed gap
     % followed by a sequence of zeros
-    elseif inSignal && ~any(seg >= postThresh) %&& ~any(posterior(i + allowedGap: i + allowedGap))
+    elseif inSignal && ~any(seg >= minSignalPosterior) %&& ~any(posterior(i + allowedGap: i + allowedGap))
         inSignal = false;
         
         % if the length of this detected signal is too insignificant,
@@ -97,56 +95,6 @@ if inSignal
 end
 onsets = onsets(1: nSignalRegions);
 offsets = offsets(1: nSignalRegions);
-
-%% Alternative (exp)
-% posterior = log(p);
-% allowedGap = 120;
-% threshold = 1.5;
-% isSignal = posterior <= 0;
-% 
-% idx = 2;
-% nSignalRegions = 0;
-% onsets = zeros(length(posterior), 1);
-% offsets = zeros(length(posterior), 1);
-% inSig = false;
-% isMajor = false;
-% while idx <= length(isSignal)
-%     if isSignal(idx - 1) == 0 && isSignal(idx) == 1
-%         nSignalRegions = nSignalRegions + 1;
-%         inSig = true;
-%         isMajor = false;
-%         onsets(nSignalRegions) = idx;
-%     end
-%     if isSignal(idx - 1) == 1 && isSignal(idx) == 0 && nSignalRegions > 0 
-%         if (isMajor)
-%             % attempt to fill in gaps
-%             filled = false;
-%             for j = idx + allowedGap : -1: 1
-%                 if (isSignal(j))
-%                     isSignal(idx: j) = 1;
-%                     filled = true;
-%                     break;
-%                 end
-%             end
-%             if ~filled
-%                 offsets(nSignalRegions) = idx;
-%             end
-%         else
-%             onsets(nSignalRegions) = [];
-%             nSignalRegions = nSignalRegions - 1;
-%         end
-%         isMajor = false;
-%         isSig = false;
-%     end
-%     if (posterior(idx) < -5)
-%         isMajor = true;
-%     end
-%     idx = idx + 1;
-% end
-% onsets = onsets(1: nSignalRegions);
-% offsets = offsets(1: nSignalRegions);
-
-%visualizeResults( wave, onsets, offsets, nSignalRegions );
 
 
 %% Merge chewing cycles / remove outliers
