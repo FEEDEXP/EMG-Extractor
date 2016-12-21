@@ -1,6 +1,7 @@
-%%% EMG Integration
+%%% EMG Integration Not Related to the EMG-Extractor
 
-% This is a script for filtering and integrating EMG files. Runs on .txt.
+% This is a script for filtering and RMS integrating EMG files. 
+% Runs on .txt.
 % Authors: M. O'Neill, C. Wall. began on 4.23.07
 
 dir = ('C:\Documents and Settings\wall0012\Desktop\Chris Desktop Data\RMS EMG\');

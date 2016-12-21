@@ -1,8 +1,10 @@
 
 %% Script to classify noise from EMG signals
 %
-% Author: Rex Ying
-%
+%  Author: Rex Ying
+%  Please cite: Ying R and Wall CE (2016)A method for discrimination of
+%  noise and EMG signal regions recorded during rhythmic behaviors.
+%  Journal of Biomechanics 49:4113 http://dx.doi.org/10.1016/j.jbiomech.2016.10.010
 
 % Change the name of the input csv file
 % The first column of the file 
@@ -10,8 +12,8 @@ set_opt;
 filename = opt.inputFileName;
 
 wave = importSignal(opt);
-p = noiseModel(wave, false, true);
-postProcessing(p, opt);
+p = noiseModel(wave, opt, false, true);
+[onsets, offsets] = postProcessing(wave, p, opt);
 
 %% Feedback
 noiseAll = [];
@@ -27,5 +29,5 @@ end
 % noise intervals
 noiseIntervals = [offsets(1: length(offsets) - 1) + ambiguousLen, onsets(2: length(onsets)) - ambiguousLen];
 
-p = noiseModel(wave, false, true, noiseAll, noiseIntervals);
-post_processing
+p = noiseModel(wave, opt, false, true, noiseAll, noiseIntervals);
+[onsets, offsets] = postProcessing(wave, p, opt);

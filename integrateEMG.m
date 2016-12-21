@@ -10,9 +10,3 @@ ws = wave .^ 2;
 for i = hwSize + 1: length(wave) - hwSize - 1
     waveRMS(i - hwSize) = sqrt(sum(ws(i - hwSize: i + hwSize)) / wSize);
 end
-
-%plot(waveRMS);
-% hold on
-% plot(365 * ones(length(waveRMS), 1), 'r');
-% plot(380 * ones(length(waveRMS), 1), 'm');
-

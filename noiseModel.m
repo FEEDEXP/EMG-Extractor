@@ -1,6 +1,6 @@
-function [ p ] = noiseModel( wave1, extremaOnly, useContinuous, noiseRegion, noiseIntervals, opt )
-%NOISEMODEL Noise model using bigrams
-%   Detailed explanation goes here
+function [ p ] = noiseModel( wave1, opt, extremaOnly, useContinuous, noiseRegion, noiseIntervals )
+%NOISEMODEL Builds the noise model using bigrams 
+%(transition probability matrix)
 
 %% Model paramsp = noiseModel(wave, false,  true);
 if ~exist('useContinuous', 'var')
@@ -27,9 +27,9 @@ if exist('noiseRegion', 'var')
 else
     disp('Estimating noise region based on Thexton''s method');
     if ~exist('opt.thextonizerHwSize', 'var')
-        approxNoiseIntervals = roughNoise(wave2, inds);
+        approxNoiseIntervals = roughNoise(wave2, opt.allowedGap);
     else
-        approxNoiseIntervals = roughNoise(wave2, inds, opt.thextonizerHwSize);
+        approxNoiseIntervals = roughNoise(wave2, opt.allowedGap, opt.thextonizerHwSize);
     end
 
     figure
@@ -40,7 +40,7 @@ else
         noise = wave1(approxNoiseIntervals(i, 1): approxNoiseIntervals(i, 2));
         time = (approxNoiseIntervals(i, 1): approxNoiseIntervals(i, 2))';
         plot(time, noise);
-        noiseAll = [noiseAll; noise];
+        noiseAll = [noiseAll; noise]; %#ok<AGROW>
     end
     hold off
     noiseIntervals = approxNoiseIntervals;
@@ -58,7 +58,7 @@ if ~useContinuous
     for i = 1: length(noiseIntervals)
         noise = wave2(noiseIntervals(i, 1): noiseIntervals(i, 2));
         if extremaOnly
-            [noise, noiseInds] = extractExtrema(noise);
+            [noise, ~] = extractExtrema(noise);
         end
 
         diffNoise = diff(round(noise)) - diffOffset;
@@ -111,6 +111,8 @@ sigmaAll = cov(pointsAll');
 
 if ~exist('reRun', 'var')
     reRun = true;
+else
+    reRun = false;
 end
 
 if ~useContinuous
@@ -126,7 +128,6 @@ if ~useContinuous
                 TMall.put(p, count + 1);
             end
         end
-        reRun = false;
     else
         if extremaOnly
             load TMall1;

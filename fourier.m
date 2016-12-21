@@ -1,6 +1,7 @@
 function [ f, femg, nfft ] = fourier( signal, Fs )
 %FOURIER Perform Fourier transform on EMG signal
-%   Detailed explanation goes here
+%   This is an option for high pass filter that is not used by
+%   the EMG-Extractor
 
 len = length(signal);
 

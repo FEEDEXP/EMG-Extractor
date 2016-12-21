@@ -1,4 +1,4 @@
-function [ noiseIntervals ] = roughNoise( emg, inds, hwSize )
+function [ noiseIntervals ] = roughNoise( emg, allowedGap, hwSize )
 %ROUGHNOISE Roughly identify the noise region used to build noise model
 %   
 %   Return: 
@@ -7,41 +7,15 @@ function [ noiseIntervals ] = roughNoise( emg, inds, hwSize )
 %
 %   Reference: 
 %   A randomisation method for discriminating between signal and noise in recordings 
-%   of rhythmic electromyographic activity
-%   A.J. Thexton
-%
+%   of rhythmic electromyographic activity.
+%   A.J. Thexton (1996) Journal of Neuroscience Methods 66:93-98
+%   This is the Thextonizer
 
-% TODO: multiscale
-
-% emg = integrateEMG(emg, hwSize);
-% 
-% figure
-% plot(inds(hwSize + (1: length(emg))), emg);
-% 
-% lb = 1;
-% ub = 25;
-% % k: number of moving horizontal lines tried
-% k = ub - lb;
-% step = 0.1; 
-% numIntersect = zeros(k / step + 1, 1);
-% count = 0;
-% for i = 1: step: k
-%     count = count + 1;
-%     numIntersect(count) = sum(emg > (i - 1) & emg < i);
-% end
-% diffNum = diff(numIntersect);
-% 
-% figure
-% hold on
-% plot(1: step: ub, numIntersect, 'b');
-% plot((1: step: ub - step) + step / 2, diffNum / step, 'm');
-% legend('number of intersections', 'derivative');
-% hold off
-% 
-% [~, ind] = min(diffNum);
-% tolerance = 0.2;
-% threshold = ind * step + 1 - step/2 + tolerance;
-[ threshold, ~ ] = thextonizer( emg );
+if exist('hwSize', 'var')
+    [ threshold, ~ ] = thextonizer( emg, allowedGap, hwSize );
+else
+    [ threshold, ~ ] = thextonizer( emg, allowedGap );
+end
 fprintf('Threshold set at: %d\n', threshold);
 
 %% use threshold to find noise regions

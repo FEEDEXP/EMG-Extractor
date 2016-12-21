@@ -1,4 +1,4 @@
-function [ threshold, isSignal ] = thextonizer( signal, hwSize )
+function [ threshold, isSignal ] = thextonizer( signal, allowedGap, hwSize )
 %THEXTONIZER Implement a thextonizer
 %  
 %   Given an input EMG signal, find a threshold that best distinguishes noise
@@ -28,7 +28,6 @@ thresholds = lb : step : ub;
 
 nCrossings = zeros(size(thresholds));
 nCrossingsRand = zeros(size(thresholds));
-nCrossingsDiffs = zeros(size(thresholds));
 for i = 1 : length(thresholds)
     inds = randperm(length(signal));
     randSignal = signal(inds);
@@ -49,11 +48,8 @@ plot(thresholds, nCrossingsDiffs);
 threshold = thresholds(thresholdIdx);
 fprintf('Threshold: %d \n\n', threshold);
 
-%% find onsets and offsets naively based on thextonizer
+%% find signal region naively based on thextonizer
 
-allowedGap = 120;
-onsets = zeros(length(signalInt), 1);
-offsets = zeros(length(signalInt), 1);
 isSignal = signalInt >= threshold;
 
 idx = 2;

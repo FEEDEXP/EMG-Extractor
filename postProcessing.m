@@ -1,10 +1,10 @@
-function [] = postProcessing(posterior, opt)
+function [onsets, offsets] = postProcessing(wave, posterior, opt)
 % Post-process the posterior (unnormalized) p, together with high passed
 % signal wave1.
 %
 % Pre-requisite: EMG_driver.m
 %
-% Author: Rex
+% Author: Rex Ying
 %
 
 inds = 1: length(wave);
@@ -55,9 +55,6 @@ onsets = zeros(length(posterior), 1);
 offsets = zeros(length(posterior), 1);
 inSignal = false;
 for i = 1: length(posterior) - allowedGap
-    if ~inSignal && posterior(i) > 0
-        onsetStart = i;
-    end
     seg = posterior(i: i + allowedGap - 1);
     % transfer into signal region
     if ~inSignal && seg(1) >= minSignalPosterior
@@ -136,28 +133,10 @@ if opt.debug
     title('Histogram of signal lengths');
 end
 
-%% categorize signals
-mu = mean(signalLengths);
-sigma = std(signalLengths);
-
-% max amplitude
-maxAmp = zeros(size(signalLengths));
-for i = 1: length(signalLengths)
-    maxAmp(i) = max(abs(wave(onsets(i): offsets(i))));
-end
-muMaxAmp = mean(maxAmp);
-threshAmp = muMaxAmp - std(maxAmp) * 2;
-
 signalRegionCategories = zeros(size(signalLengths));
-for i = 1: length(signalLengths)
-    if signalLengths(i) < mu - sigma * 2
-        signalRegionCategories(i) = 0;
-    end
-end
-
-signalLengths = offsets - onsets;
 
 visualizeResults( wave, onsets, offsets, nSignalRegions, signalRegionCategories );
 
-%% save onsets/offsets
+%% here the onset and offset points (times) are saved to a .csv 
+%% file for further analysis
 csvwrite([opt.inputFolderName, opt.inputFileName, '-Onoff-output.csv'], [onsets, offsets]);

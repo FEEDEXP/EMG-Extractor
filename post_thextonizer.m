@@ -1,6 +1,9 @@
 function [ onsets, offsets ] = post_thextonizer( isSignal )
-%POST_THEXTONIZER Summary of this function goes here
-%   Detailed explanation goes here
+%POST_THEXTONIZER 
+%   This script allows you to run Thextonizer separately so that
+%   you can get the visualization
+%   Not called up as part of the EMG-Extractor when running
+%   the EMG_driver script
 
 nSignals = 0;
 i = 1;

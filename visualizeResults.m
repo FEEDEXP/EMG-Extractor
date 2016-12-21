@@ -50,7 +50,7 @@ end
 
 legendHandles = [];
 for i = 1: length(handles)
-    legendHandles = [legendHandles, handles{i}];
+    legendHandles = [legendHandles, handles{i}]; %#ok<AGROW>
 end
 legend(legendHandles, legendStr);
 

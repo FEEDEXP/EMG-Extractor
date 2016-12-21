@@ -1,5 +1,5 @@
 function [ wave ] = importSignal( opt, plotWave )
-%% Import signal from csv file
+%% Import signal from csv file and run a high pass filter of the raw data
 %
 % Input:
 %   plot: if true, plot the signals before and after high-pass filter
@@ -16,7 +16,7 @@ end
 rawData = csvread([opt.inputFolderName, opt.inputFileName, '.csv'], 1, 0);
 
 fid = fopen([opt.inputFolderName, opt.inputFileName, '.csv']);
-header = textscan(fid,'%s %s %s %s %s %s %s %s', 1, 'delimiter',',');
+[~] = textscan(fid,'%s %s %s %s %s %s %s %s', 1, 'delimiter',',');
 fclose(fid);
 
 %% processing
@@ -29,12 +29,6 @@ if plotWave
 end
 
 Fs = 10000;
-%[f, fLMS, nfft] = fourier(wave, Fs);
-
-%startFreq = round(50 / f(2)); % disregard low frequency region
-%figure
-%plot(f(startFreq: end), 2*abs(fLMS(startFreq: nfft/2+1)));
-%title 'Fourier transform of original wave'
 
 %% High pass
 sigma = 100;
@@ -48,29 +42,7 @@ if plotWave
     title 'after high pass'
 end
 
-%% noise
-% noiseSample = wave(1000: 4500);
-% figure
-% plot(noiseSample);
-% title 'EMG noise plot'
-% 
-% [f, fLMS, nfft] = fourier(noiseSample, Fs);
-% startFreq = round(50 / f(2));
-% figure
-% plot(f(startFreq: end), 2*abs(fLMS(startFreq: nfft/2+1)));
-% title 'noise Fourier transform'
 
-%% signal
-% emgSample = wave(5000: 6800);
-% figure
-% plot(emgSample);
-% title 'EMG signal plot'
-% 
-% [f, fLMS, nfft] = fourier(emgSample, Fs);
-% startFreq = round(50 / f(2));
-% figure
-% plot(f(startFreq: end), 2*abs(fLMS(startFreq: nfft/2+1)));
-% title 'EMG signal Fourier transform'
 
 
 
