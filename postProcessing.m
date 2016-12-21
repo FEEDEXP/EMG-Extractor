@@ -1,3 +1,4 @@
+function [] = postProcessing(posterior, opt)
 % Post-process the posterior (unnormalized) p, together with high passed
 % signal wave1.
 %
@@ -5,14 +6,6 @@
 %
 % Author: Rex
 %
-
-% windowSize = 11;
-% f = ones(windowSize, 1);
-% f = f / sum(f);
-% pw = conv(p, f);
-% 
-% figure
-% plot(pw)
 
 inds = 1: length(wave);
 % left and right window size
@@ -22,12 +15,12 @@ wSize = lwSize + rwSize + 1;
 
 threshold = -opt.posteriorThreshold;
 
-lscore = zeros(size(p));
-rscore = zeros(size(p));
+lscore = zeros(size(posterior));
+rscore = zeros(size(posterior));
 % onset: p has high value in left window, low value in right window
-for i = lwSize + 1: length(p) - rwSize
-    l = p(i - lwSize: i);
-    r = p(i: i + rwSize);
+for i = lwSize + 1: length(posterior) - rwSize
+    l = posterior(i - lwSize: i);
+    r = posterior(i: i + rwSize);
     lscore(i) = sum(log(l) <= threshold);
     rscore(i) = sum(log(r) <= threshold);
 end

@@ -10,18 +10,18 @@ set_opt;
 filename = opt.inputFileName;
 
 wave = importSignal(opt);
-p = noiseModel(wave, false,  true);
-post_processing;
+p = noiseModel(wave, false, true);
+postProcessing(p, opt);
 
 %% Feedback
 noiseAll = [];
-% the 100 points after offset is considered ambiguous and not included in noise
-ambiguousLen = 100;
+
+ambiguousLen = opt.ambiguousLen;
 for i = 1: length(offsets) - 1
     if (onsets(i+1) - offsets(i) < 2 * ambiguousLen)
         continue;
     end
-    noiseAll = [noiseAll; wave(offsets(i) + ambiguousLen: onsets(i + 1) - ambiguousLen)];
+    noiseAll = [noiseAll; wave(offsets(i) + ambiguousLen: onsets(i + 1) - ambiguousLen)]; %#ok<AGROW>
 end
 
 % noise intervals
